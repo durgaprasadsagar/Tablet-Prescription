@@ -89,7 +89,7 @@
 
         /* Hide buttons when printing */
         @media print {
-            #add-row, #remove-row, #print-button {
+            #add-row, #remove-row, #print-button, #share-button {
                 display: none;
             }
             #main-page {
@@ -104,6 +104,11 @@
     <!-- Main Page with Excel-like Table -->
     <div id="main-page">
         <h2>Arjun Prasad's Tablet Description</h2>
+        <p>
+            Name: <input type="text" id="name-input" placeholder="Enter your name" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+            Phone: <input type="text" id="phone-input" placeholder="Enter phone number" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+            Date: <span id="current-date"></span>
+        </p>
         <table id="tablet-table">
             <thead>
                 <tr>
@@ -124,6 +129,7 @@
         <button id="add-row" onclick="addRow()">Add Row</button>
         <button id="remove-row" onclick="removeRow()">Remove Row</button>
         <button id="print-button" onclick="printPage()">Print</button>
+        <button id="share-button" onclick="shareToWhatsApp()">Share on WhatsApp</button>
 
         <!-- Message at the bottom -->
         <div class="prescription-message">
@@ -182,6 +188,49 @@
         function printPage() {
             window.print();
         }
+
+        // Set live date on page load
+        function setCurrentDate() {
+            const dateElement = document.getElementById("current-date");
+            const currentDate = new Date().toLocaleDateString();
+            dateElement.innerText = currentDate;
+        }
+
+        // Share prescription details to WhatsApp
+        function shareToWhatsApp() {
+            const phoneNumber = document.getElementById("phone-input").value;
+            const userName = document.getElementById("name-input").value;
+            const currentDate = document.getElementById("current-date").innerText;
+            
+            if (!phoneNumber) {
+                alert("Please enter a phone number to share.");
+                return;
+            }
+
+            // Generate the message to be shared
+            let message = `Prescription Details for ${userName} on ${currentDate}:\n\n`;
+
+            const rows = document.querySelectorAll("#tablet-table tbody tr");
+            rows.forEach((row, index) => {
+                const tabletName = row.cells[0].getElementsByTagName("input")[0].value;
+                const description = row.cells[1].getElementsByTagName("input")[0].value;
+                const timings = row.cells[2].getElementsByTagName("input")[0].value;
+                
+                if (tabletName && description && timings) {
+                    message += `${index + 1}. Tablet: ${tabletName}\n   Description: ${description}\n   Timings: ${timings}\n\n`;
+                }
+            });
+
+            const whatsappUrl = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
+
+            // Open the WhatsApp share URL in a new tab
+            window.open(whatsappUrl, '_blank');
+        }
+
+        // Initialize the current date on page load
+        window.onload = function() {
+            setCurrentDate();
+        };
     </script>
 </body>
 </html>
